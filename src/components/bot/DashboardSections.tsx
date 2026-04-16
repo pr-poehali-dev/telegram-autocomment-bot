@@ -1,6 +1,37 @@
+import { useState, useEffect, useRef } from "react";
 import Icon from "@/components/ui/icon";
 
+const SETTINGS_URL = "https://functions.poehali.dev/ce3a8ab9-58c3-4191-b8be-798031a96b7b";
+
 export function Dashboard() {
+  const [botStatus, setBotStatus] = useState<"stopped" | "running">("stopped");
+  const [toggling, setToggling] = useState(false);
+  const hasFetched = useRef(false);
+
+  useEffect(() => {
+    if (hasFetched.current) return;
+    hasFetched.current = true;
+    fetch(SETTINGS_URL)
+      .then((r) => r.json())
+      .then((data) => {
+        const status = data.settings?.bot_status;
+        if (status === "running") setBotStatus("running");
+      })
+      .catch(() => {});
+  }, []);
+
+  const toggleBot = async () => {
+    setToggling(true);
+    const next = botStatus === "running" ? "stopped" : "running";
+    await fetch(SETTINGS_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ settings: { bot_status: next } }),
+    });
+    setBotStatus(next);
+    setToggling(false);
+  };
+
   const metrics = [
     { label: "Комментариев сегодня", value: "1 248", delta: "+18%", icon: "MessageCircle", color: "text-cyan-400" },
     { label: "Активных платформ", value: "6", delta: "stable", icon: "Globe", color: "text-violet-400" },
@@ -16,6 +47,8 @@ export function Dashboard() {
     { platform: "Twitter/X", action: "Реплай добавлен", post: "#нейросети", time: "15 мин назад", status: "ok" },
   ];
 
+  const isRunning = botStatus === "running";
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="relative overflow-hidden rounded-2xl p-6 glass border border-white/5">
@@ -25,21 +58,34 @@ export function Dashboard() {
         <div className="relative flex items-center justify-between flex-wrap gap-4">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <span className="w-2 h-2 rounded-full status-online inline-block" />
-              <span className="text-xs text-emerald-400 font-mono uppercase tracking-widest">Бот активен</span>
+              <span className={`w-2 h-2 rounded-full inline-block ${isRunning ? "status-online" : "bg-white/20"}`} />
+              <span className={`text-xs font-mono uppercase tracking-widest ${isRunning ? "text-emerald-400" : "text-muted-foreground"}`}>
+                {isRunning ? "Бот активен" : "Бот остановлен"}
+              </span>
             </div>
             <h1 className="text-3xl font-bold gradient-text mb-1">BotControl</h1>
             <p className="text-muted-foreground text-sm">AI-автокомментинг · Последняя активность: только что</p>
           </div>
           <div className="flex gap-3">
-            <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-sm font-medium hover:bg-cyan-500/20 transition-all">
-              <Icon name="Play" size={14} />
-              Запустить
-            </button>
-            <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm font-medium hover:bg-rose-500/20 transition-all">
-              <Icon name="Pause" size={14} />
-              Пауза
-            </button>
+            {!isRunning ? (
+              <button
+                onClick={toggleBot}
+                disabled={toggling}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-500/15 border border-emerald-500/25 text-emerald-400 text-sm font-semibold hover:bg-emerald-500/25 disabled:opacity-50 transition-all glow-cyan"
+              >
+                <Icon name={toggling ? "Loader" : "Play"} size={14} />
+                {toggling ? "Запуск..." : "Запустить"}
+              </button>
+            ) : (
+              <button
+                onClick={toggleBot}
+                disabled={toggling}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-rose-500/15 border border-rose-500/25 text-rose-400 text-sm font-semibold hover:bg-rose-500/25 disabled:opacity-50 transition-all"
+              >
+                <Icon name={toggling ? "Loader" : "Square"} size={14} />
+                {toggling ? "Остановка..." : "Остановить"}
+              </button>
+            )}
           </div>
         </div>
       </div>

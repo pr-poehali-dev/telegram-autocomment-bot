@@ -1,0 +1,21 @@
+{
+  "tests": [
+    {
+      "name": "GET accounts list",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 200,
+      "expectedBody": [],
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "POST create account",
+      "method": "POST",
+      "path": "/",
+      "body": {"platform": "tg", "username": "@testbot", "token": "test_token", "display_name": "Test Bot"},
+      "expectedStatus": 200,
+      "expectedBody": {"platform": "tg"},
+      "bodyMatcher": "partial"
+    }
+  ]
+}

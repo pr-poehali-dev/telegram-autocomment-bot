@@ -1,0 +1,21 @@
+{
+  "tests": [
+    {
+      "name": "GET settings",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 200,
+      "expectedBody": {"settings": {}, "comments": [], "targets": []},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "POST save settings",
+      "method": "POST",
+      "path": "/",
+      "body": {"settings": {"bot_status": "stopped"}},
+      "expectedStatus": 200,
+      "expectedBody": {"ok": true},
+      "bodyMatcher": "partial"
+    }
+  ]
+}

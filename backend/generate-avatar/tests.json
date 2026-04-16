@@ -1,0 +1,13 @@
+{
+  "tests": [
+    {
+      "name": "Generate nickname only",
+      "method": "POST",
+      "path": "/",
+      "body": {"type": "nickname", "gender": "female", "count": 1},
+      "expectedStatus": 200,
+      "expectedBody": {"results": []},
+      "bodyMatcher": "partial"
+    }
+  ]
+}
